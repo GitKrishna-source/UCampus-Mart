@@ -67,6 +67,10 @@ public record Listing(
         return status == Status.EXCHANGED;
     }
 
+    public boolean canBeCompleted() {
+        return isAvailable();
+    }
+
     public Listing complete(Status result) {
         if (!isAvailable()) {
             throw new IllegalArgumentException("This item is no longer available.");
