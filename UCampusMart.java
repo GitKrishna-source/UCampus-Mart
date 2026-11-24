@@ -44,7 +44,7 @@ public final class UCampusMart {
         System.out.println("Buy, sell, and swap hostel essentials aged 12 to 24 months.");
         student = chooseStudent();
         while (!student.isEmpty()) {
-            System.out.println("\nStudent | " + student);
+            System.out.println("\n--- Current Student: " + student + " ---");
             System.out.print("""
                     1. Browse or search listings
                     2. Post a listing
@@ -161,6 +161,7 @@ public final class UCampusMart {
             System.out.println("You have no incoming or outgoing offers.");
             return;
         }
+        System.out.printf("Total offers (%d):%n", offers.size());
         offers.forEach(offer -> printOffer(marketplace, offer));
     }
 
@@ -174,6 +175,7 @@ public final class UCampusMart {
             System.out.println("You have no pending incoming offers.");
             return;
         }
+        System.out.printf("Pending incoming offers (%d):%n", pending.size());
         pending.forEach(offer -> printOffer(marketplace, offer));
         int id = readPositiveInt("Offer ID");
         boolean accept = switch (prompt("1. Accept  2. Decline > ")) {
@@ -193,6 +195,7 @@ public final class UCampusMart {
             System.out.println(emptyMessage);
             return;
         }
+        System.out.printf("Total listings (%d):%n", listings.size());
         listings.forEach(this::printListing);
     }
 
