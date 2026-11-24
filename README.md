@@ -10,7 +10,7 @@ UCampus Mart is designed around a simple idea: useful items should find a second
 - **Create Listings:** Add items with their name, category, condition, age, and transaction type.
 - **Flexible Listing Types:** List an item for sale, exchange, or both.
 - **Browse and Search:** View available listings or search by item name and category.
-- **Purchase Requests:** Send purchase requests to listing owners.
+- **Purchase Requests:** One buyer can have a pending purchase request per listing.
 - **Exchange Offers:** Propose swaps using your own available items.
 - **Offer Management:** View incoming and outgoing offers, and accept or decline incoming requests.
 - **Listing Status Tracking:** Listings are marked as Available, Sold, or Exchanged.
@@ -88,7 +88,7 @@ java -cp out UCampusMart path/to/marketplace.properties
    mysql --host=127.0.0.1 --user=root --password --execute="source database/schema.sql"
    ```
 
-2. Place one Connector/J JAR in `lib/`. For MySQL Server 8.0, use Connector/J 9.7.0. Connector/J 26.10.0 supports MySQL Server 8.4 and later. [Download Connector/J 9.7.0](https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/9.7.0/mysql-connector-j-9.7.0.jar) · [9.7.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-9-7-0.html) · [26.10.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-26-10-0.html)
+2. The repository includes Connector/J 9.7.0 in `lib/` for MySQL Server 8.0. Connector/J 26.10.0 supports MySQL Server 8.4 and later. Keep one Connector/J JAR in `lib/` when switching driver versions. [Download Connector/J 9.7.0](https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/9.7.0/mysql-connector-j-9.7.0.jar) · [9.7.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-9-7-0.html) · [26.10.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-26-10-0.html)
 
 3. Set `UCAMPUS_DB_USER` and `UCAMPUS_DB_PASSWORD` for an account with `SELECT`, `INSERT`, and `UPDATE` privileges on `ucampus_mart.*`. The app defaults to `jdbc:mysql://127.0.0.1:3306/ucampus_mart`. Set `UCAMPUS_DB_URL` to use a different host, port, or database. Supply credentials through the environment and keep them out of Git.
 
@@ -126,6 +126,8 @@ MySQL uses its own listings and offers tables. To open data you previously saved
 - Exchange-only listings cannot have a sale price.
 - Students cannot send offers for their own listings.
 - Only available listings can be included in new offers.
+- While a purchase request is pending, the app rejects additional purchase requests for that listing. Declining the request frees the listing for another buyer. Accepting it marks the listing as sold.
+- Owners can still review competing requests saved by earlier versions. New purchase requests are rejected while any of those requests are pending.
 
 ## Data Storage
 
@@ -137,7 +139,7 @@ By default, marketplace data is stored at:
 
 The application creates the data directory when it first saves marketplace changes.
 
-The storage system uses file locking and temporary files to help protect updates and prevent conflicts between application processes.
+File mode uses Java synchronization for threads and a file lock for separate processes. MySQL mode uses a database transaction and a row lock. Both modes check for a pending purchase and save a new request within the same locked update.
 
 ## Current Limitations
 

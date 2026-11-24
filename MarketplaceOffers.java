@@ -57,6 +57,10 @@ final class MarketplaceOffers {
         if (duplicate) {
             throw new IllegalArgumentException("You already have this offer pending.");
         }
+        if (offeredListingId == null && offers.values().stream().anyMatch(offer -> offer.targetId() == listingId
+                && offer.status() == Marketplace.OfferStatus.PENDING && !offer.isExchange())) {
+            throw new IllegalArgumentException("Listing #" + listingId + " already has a pending purchase request.");
+        }
         Marketplace.Offer offer = new Marketplace.Offer(lastOfferId + 1, requester, listingId,
                 offeredListingId, Marketplace.OfferStatus.PENDING);
         offers.put(offer.id(), offer);

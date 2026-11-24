@@ -22,6 +22,7 @@ abstract class MarketplaceStore {
 
     private static final class FileStore extends MarketplaceStore {
         private static final String VERSION = "1";
+        private static final Object FILE_UPDATE_MONITOR = new Object();
 
         private final Path dataFile;
         private final Path lockFile;
@@ -53,17 +54,19 @@ abstract class MarketplaceStore {
 
         @Override
         <T> T update(Function<Marketplace, T> change) throws IOException {
-            Files.createDirectories(dataFile.getParent());
-            try (FileChannel channel = FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
-                // Keep the read, change, and save together when multiple CLI processes use the same file.
-                var lock = channel.lock();
-                try {
-                    Marketplace marketplace = load();
-                    T result = change.apply(marketplace);
-                    save(marketplace);
-                    return result;
-                } finally {
-                    lock.release();
+            // The monitor coordinates threads in this JVM. The file lock coordinates separate processes.
+            synchronized (FILE_UPDATE_MONITOR) {
+                Files.createDirectories(dataFile.getParent());
+                try (FileChannel channel = FileChannel.open(lockFile, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+                    var lock = channel.lock();
+                    try {
+                        Marketplace marketplace = load();
+                        T result = change.apply(marketplace);
+                        save(marketplace);
+                        return result;
+                    } finally {
+                        lock.release();
+                    }
                 }
             }
         }

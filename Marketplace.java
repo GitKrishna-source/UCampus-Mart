@@ -60,8 +60,8 @@ public final class Marketplace {
         return handle.toLowerCase(Locale.ROOT);
     }
 
-    public Listing postListing(String owner, String title, String category, String condition,
-                               int ageMonths, Listing.Mode mode, BigDecimal price) {
+    public synchronized Listing postListing(String owner, String title, String category, String condition,
+                                            int ageMonths, Listing.Mode mode, BigDecimal price) {
         Listing listing = new Listing(lastListingId + 1, studentHandle(owner), title, category,
                 condition, ageMonths, mode, price, Listing.Status.AVAILABLE);
         listings.put(listing.id(), listing);
@@ -69,7 +69,7 @@ public final class Marketplace {
         return listing;
     }
 
-    public List<Listing> searchAvailable(String query) {
+    public synchronized List<Listing> searchAvailable(String query) {
         String text = query.strip().toLowerCase(Locale.ROOT);
         return listings.values().stream()
                 .filter(Listing::isAvailable)
@@ -78,12 +78,12 @@ public final class Marketplace {
                 .toList();
     }
 
-    public List<Listing> listingsByOwner(String student) {
+    public synchronized List<Listing> listingsByOwner(String student) {
         String owner = studentHandle(student);
         return listings.values().stream().filter(listing -> listing.owner().equals(owner)).toList();
     }
 
-    public Listing listing(int id) {
+    public synchronized Listing listing(int id) {
         Listing listing = listings.get(id);
         if (listing == null) {
             throw new IllegalArgumentException("Listing #" + id + " was not found.");
@@ -91,23 +91,23 @@ public final class Marketplace {
         return listing;
     }
 
-    public List<Offer> offersFor(String student) {
+    public synchronized List<Offer> offersFor(String student) {
         return offers.forStudent(student);
     }
 
-    public Offer requestPurchase(String student, int listingId) {
+    public synchronized Offer requestPurchase(String student, int listingId) {
         return offers.submit(student, listingId, null);
     }
 
-    public Offer proposeExchange(String student, int listingId, int offeredListingId) {
+    public synchronized Offer proposeExchange(String student, int listingId, int offeredListingId) {
         return offers.submit(student, listingId, offeredListingId);
     }
 
-    public Offer decideOffer(String student, int offerId, boolean accept) {
+    public synchronized Offer decideOffer(String student, int offerId, boolean accept) {
         return offers.decide(student, offerId, accept);
     }
 
-    void completeListings(int targetId, Integer offeredId) {
+    synchronized void completeListings(int targetId, Integer offeredId) {
         Listing target = availableListing(targetId);
         if (offeredId == null) {
             listings.put(targetId, target.complete(Listing.Status.SOLD));
@@ -129,11 +129,11 @@ public final class Marketplace {
         return listing;
     }
 
-    List<Listing> allListings() {
+    synchronized List<Listing> allListings() {
         return List.copyOf(listings.values());
     }
 
-    List<Offer> allOffers() {
+    synchronized List<Offer> allOffers() {
         return offers.all();
     }
 }
