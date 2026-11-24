@@ -14,26 +14,39 @@ public final class UCampusMart {
 
     public static void main(String[] args) {
         if (args.length > 1) {
-            System.err.println("Usage: java UCampusMart [data-file]");
+            System.err.println("Usage: java UCampusMart [data-file | --mysql]");
             System.exit(2);
         }
         if (args.length == 1 && (args[0].equals("--help") || args[0].equals("-h"))) {
-            System.out.println("Usage: java UCampusMart [data-file]");
+            System.out.println("Usage: java UCampusMart [data-file | --mysql]");
             System.out.println("The default file is .ucampus-mart/marketplace.properties in your home directory.");
+            System.out.println("For --mysql, set UCAMPUS_DB_USER and UCAMPUS_DB_PASSWORD. UCAMPUS_DB_URL is optional.");
             return;
         }
 
         try (Scanner input = new Scanner(System.in)) {
-            Path path = args.length == 1
-                    ? Path.of(args[0])
-                    : Path.of(System.getProperty("user.home"), ".ucampus-mart", "marketplace.properties");
-            new UCampusMart(new MarketplaceStore(path), input).run();
+            new UCampusMart(selectStore(args), input).run();
         } catch (IllegalArgumentException exception) {
             System.err.println(exception.getMessage());
+            System.exit(2);
+        } catch (IOException exception) {
+            System.err.println("Could not open MySQL storage. " + exception.getMessage());
             System.exit(2);
         } catch (NoSuchElementException exception) {
             System.out.println("\nGoodbye.");
         }
+    }
+
+    private static MarketplaceStore selectStore(String[] args) throws IOException {
+        if (args.length == 1 && args[0].equals("--mysql")) {
+            MarketplaceStore database = DBConnection.fromEnvironment();
+            database.load();
+            return database;
+        }
+        Path path = args.length == 1
+                ? Path.of(args[0])
+                : Path.of(System.getProperty("user.home"), ".ucampus-mart", "marketplace.properties");
+        return MarketplaceStore.forFile(path);
     }
 
     private void run() {

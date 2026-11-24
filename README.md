@@ -26,8 +26,7 @@ UCampus Mart is designed around a simple idea: useful items should find a second
 - BigDecimal for price handling
 - File Handling and Properties
 - Java NIO and File Locking
-
-No external libraries or database are required.
+- Optional JDBC storage with MySQL Connector/J
 
 ## Project Structure
 
@@ -39,8 +38,8 @@ No external libraries or database are required.
 | `Listing.java` | Represents an item listing and enforces its validation and status rules |
 | `Marketplace.java` | Manages the listing catalog and provides marketplace operations |
 | `MarketplaceOffers.java` | Validates purchase and exchange offers and manages their status |
-| `MarketplaceStore.java` | Loads and saves the local data file using locks and atomic writes |
-| `MarketplacePropertiesCodec.java` | Converts listings and offers to and from the saved Properties format |
+| `MarketplaceStore.java` | Defines the storage operations and implements local Properties file storage |
+| `DBConnection.java` | Opens MySQL JDBC connections and stores listings and offers in the database |
 
 ## Requirements
 
@@ -81,6 +80,34 @@ To use a custom data-file location:
 java -cp out UCampusMart path/to/marketplace.properties
 ```
 
+## Run with MySQL
+
+1. Start MySQL and create the database and tables from the repository root. Use a MySQL account with permission to create the schema.
+
+   ```powershell
+   mysql --host=127.0.0.1 --user=root --password --execute="source database/schema.sql"
+   ```
+
+2. Place one Connector/J JAR in `lib/`. For MySQL Server 8.0, use Connector/J 9.7.0. Connector/J 26.10.0 supports MySQL Server 8.4 and later. [Download Connector/J 9.7.0](https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/9.7.0/mysql-connector-j-9.7.0.jar) · [9.7.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-9-7-0.html) · [26.10.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-26-10-0.html)
+
+3. Set `UCAMPUS_DB_USER` and `UCAMPUS_DB_PASSWORD` for an account with `SELECT`, `INSERT`, and `UPDATE` privileges on `ucampus_mart.*`. The app defaults to `jdbc:mysql://127.0.0.1:3306/ucampus_mart`. Set `UCAMPUS_DB_URL` to use a different host, port, or database. Supply credentials through the environment and keep them out of Git.
+
+   ```powershell
+   $env:UCAMPUS_DB_USER = 'your_mysql_user'
+   $mysqlPassword = Read-Host 'MySQL password' -AsSecureString
+   $env:UCAMPUS_DB_PASSWORD = [System.Net.NetworkCredential]::new('', $mysqlPassword).Password
+   ```
+
+4. Compile with `javac -d out *.java`, then run in PowerShell.
+
+   ```powershell
+   java -cp "out;lib/*" UCampusMart --mysql
+   ```
+
+   On Linux and macOS, use `java -cp "out:lib/*" UCampusMart --mysql`.
+
+MySQL uses its own listings and offers tables. To open data you previously saved to a Properties file, use the file-mode command above.
+
 ## How to Use
 
 1. Enter a student handle when prompted.
@@ -116,10 +143,8 @@ The storage system uses file locking and temporary files to help protect updates
 
 UCampus Mart is an educational console application and a prototype of a student marketplace.
 
-- Student handles are identifiers; password-based authentication is not implemented.
+- Students can switch to any handle in the console.
 - Payments and physical item handovers are arranged directly between students.
-- Data is stored locally in a Properties file rather than a central database.
-- The application currently does not provide a graphical interface or network-based multi-user access.
 
 ## Future Improvements
 
@@ -127,12 +152,11 @@ UCampus Mart is an educational console application and a prototype of a student 
 - Listing descriptions and campus pickup locations
 - Marketplace dashboard and statistics
 - Automated unit testing
-- Database integration
 - Student authentication
 
 ## Project Objective
 
-This project demonstrates how core Java concepts can be combined to develop a practical menu-driven application. It brings together object-oriented programming, data validation, collections, exception handling, and file persistence in a student-focused marketplace.
+This project brings together object-oriented programming, data validation, collections, exception handling, and persistence through local Properties files or JDBC in a student-focused marketplace.
 
 ---
 
