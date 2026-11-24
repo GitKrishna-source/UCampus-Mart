@@ -55,8 +55,20 @@ public record Listing(
         }
     }
 
+    public boolean isAvailable() {
+        return status == Status.AVAILABLE;
+    }
+
+    public boolean isSold() {
+        return status == Status.SOLD;
+    }
+
+    public boolean isExchanged() {
+        return status == Status.EXCHANGED;
+    }
+
     public Listing complete(Status result) {
-        if (status != Status.AVAILABLE) {
+        if (!isAvailable()) {
             throw new IllegalArgumentException("This item is no longer available.");
         }
         if (result != Status.SOLD && result != Status.EXCHANGED) {

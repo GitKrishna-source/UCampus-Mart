@@ -131,7 +131,7 @@ public final class UCampusMart {
     private void proposeExchange() throws IOException {
         Marketplace marketplace = store.load();
         List<Listing> mine = marketplace.listingsByOwner(student).stream()
-                .filter(listing -> listing.status() == Listing.Status.AVAILABLE && listing.mode().allowsExchange())
+                .filter(listing -> listing.isAvailable() && listing.mode().allowsExchange())
                 .toList();
         if (mine.isEmpty()) {
             System.out.println("Post an item that allows exchanges before proposing a swap.");

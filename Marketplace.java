@@ -83,7 +83,7 @@ public final class Marketplace {
     public List<Listing> searchAvailable(String query) {
         String text = query.strip().toLowerCase(Locale.ROOT);
         return listings.values().stream()
-                .filter(listing -> listing.status() == Listing.Status.AVAILABLE)
+                .filter(Listing::isAvailable)
                 .filter(listing -> listing.title().toLowerCase(Locale.ROOT).contains(text)
                         || listing.category().toLowerCase(Locale.ROOT).contains(text))
                 .toList();
@@ -188,7 +188,7 @@ public final class Marketplace {
 
     private Listing availableListing(int id) {
         Listing listing = listing(id);
-        if (listing.status() != Listing.Status.AVAILABLE) {
+        if (!listing.isAvailable()) {
             throw new IllegalArgumentException("Listing #" + id + " is no longer available.");
         }
         return listing;
