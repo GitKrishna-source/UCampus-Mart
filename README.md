@@ -33,10 +33,14 @@ No external libraries or database are required.
 
 | File | Responsibility |
 |---|---|
-| `UCampusMart.java` | Main method, console menu, input and output |
-| `Marketplace.java` | Marketplace operations, listings and offers |
-| `Listing.java` | Listing data model and validation |
-| `MarketplaceStore.java` | Loading and saving marketplace data |
+| `UCampusMart.java` | Starts the application, runs the menu, and switches the active student |
+| `ConsoleInputOutput.java` | Reads and validates console input and formats listings and offers |
+| `MarketplaceMenuActions.java` | Runs the listing, purchase, exchange, and offer review workflows |
+| `Listing.java` | Represents an item listing and enforces its validation and status rules |
+| `Marketplace.java` | Manages the listing catalog and provides marketplace operations |
+| `MarketplaceOffers.java` | Validates purchase and exchange offers and manages their status |
+| `MarketplaceStore.java` | Loads and saves the local data file using locks and atomic writes |
+| `MarketplacePropertiesCodec.java` | Converts listings and offers to and from the saved Properties format |
 
 ## Requirements
 
@@ -62,19 +66,19 @@ cd UCampus-Mart
 **2. Compile the Java files**
 
 ```bash
-javac *.java
+javac -d out *.java
 ```
 
 **3. Run the application**
 
 ```bash
-java UCampusMart
+java -cp out UCampusMart
 ```
 
 To use a custom data-file location:
 
 ```bash
-java UCampusMart path/to/marketplace.properties
+java -cp out UCampusMart path/to/marketplace.properties
 ```
 
 ## How to Use

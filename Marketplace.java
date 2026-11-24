@@ -3,7 +3,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 public final class Marketplace {
     public enum OfferStatus {
@@ -25,19 +24,18 @@ public final class Marketplace {
             return offeredId != null;
         }
 
-        private boolean involves(int listingId) {
+        boolean involves(int listingId) {
             return targetId == listingId || (offeredId != null && offeredId == listingId);
         }
 
-        private Offer withStatus(OfferStatus result) {
+        Offer withStatus(OfferStatus result) {
             return new Offer(id, requester, targetId, offeredId, result);
         }
     }
 
     private final Map<Integer, Listing> listings = new LinkedHashMap<>();
-    private final Map<Integer, Offer> offers = new LinkedHashMap<>();
+    private final MarketplaceOffers offers;
     private int lastListingId;
-    private int lastOfferId;
 
     public Marketplace() {
         this(List.of(), List.of());
@@ -50,16 +48,7 @@ public final class Marketplace {
             }
             lastListingId = Math.max(lastListingId, listing.id());
         }
-        for (Offer offer : savedOffers) {
-            listing(offer.targetId());
-            if (offer.isExchange()) {
-                listing(offer.offeredId());
-            }
-            if (offers.putIfAbsent(offer.id(), offer) != null) {
-                throw new IllegalArgumentException("Duplicate offer ID " + offer.id() + ".");
-            }
-            lastOfferId = Math.max(lastOfferId, offer.id());
-        }
+        offers = new MarketplaceOffers(this, savedOffers);
     }
 
     public static String studentHandle(String input) {
@@ -103,90 +92,36 @@ public final class Marketplace {
     }
 
     public List<Offer> offersFor(String student) {
-        String handle = studentHandle(student);
-        return offers.values().stream()
-                .filter(offer -> offer.requester().equals(handle) || listing(offer.targetId()).owner().equals(handle))
-                .toList();
+        return offers.forStudent(student);
     }
 
     public Offer requestPurchase(String student, int listingId) {
-        return submitOffer(student, listingId, null);
+        return offers.submit(student, listingId, null);
     }
 
     public Offer proposeExchange(String student, int listingId, int offeredListingId) {
-        return submitOffer(student, listingId, offeredListingId);
-    }
-
-    private Offer submitOffer(String student, int listingId, Integer offeredListingId) {
-        String requester = studentHandle(student);
-        Listing target = availableListing(listingId);
-        if (target.owner().equals(requester)) {
-            throw new IllegalArgumentException("You already own this listing.");
-        }
-        if (offeredListingId == null) {
-            if (!target.mode().allowsSale()) {
-                throw new IllegalArgumentException("This item is available for exchange only.");
-            }
-        } else {
-            Listing offered = availableListing(offeredListingId);
-            if (!offered.owner().equals(requester)) {
-                throw new IllegalArgumentException("Choose one of your own listings to offer.");
-            }
-            if (!target.mode().allowsExchange() || !offered.mode().allowsExchange()) {
-                throw new IllegalArgumentException("Both listings must allow exchanges.");
-            }
-        }
-        boolean duplicate = offers.values().stream()
-                .anyMatch(offer -> offer.status() == OfferStatus.PENDING && offer.requester().equals(requester)
-                        && offer.targetId() == listingId && Objects.equals(offer.offeredId(), offeredListingId));
-        if (duplicate) {
-            throw new IllegalArgumentException("You already have this offer pending.");
-        }
-        Offer offer = new Offer(lastOfferId + 1, requester, listingId, offeredListingId, OfferStatus.PENDING);
-        offers.put(offer.id(), offer);
-        lastOfferId = offer.id();
-        return offer;
+        return offers.submit(student, listingId, offeredListingId);
     }
 
     public Offer decideOffer(String student, int offerId, boolean accept) {
-        Offer offer = offers.get(offerId);
-        if (offer == null || !listing(offer.targetId()).owner().equals(studentHandle(student))) {
-            throw new IllegalArgumentException("Choose an offer sent to one of your listings.");
-        }
-        if (offer.status() != OfferStatus.PENDING) {
-            throw new IllegalArgumentException("This offer has already been resolved.");
-        }
-        if (!accept) {
-            Offer declined = offer.withStatus(OfferStatus.DECLINED);
-            offers.put(offer.id(), declined);
-            return declined;
-        }
-
-        Listing target = availableListing(offer.targetId());
-        if (offer.isExchange()) {
-            Listing offered = availableListing(offer.offeredId());
-            Listing completedTarget = target.complete(Listing.Status.EXCHANGED);
-            Listing completedOffered = offered.complete(Listing.Status.EXCHANGED);
-            listings.put(completedTarget.id(), completedTarget);
-            listings.put(completedOffered.id(), completedOffered);
-        } else {
-            listings.put(target.id(), target.complete(Listing.Status.SOLD));
-        }
-
-        Offer accepted = offer.withStatus(OfferStatus.ACCEPTED);
-        offers.put(offer.id(), accepted);
-        offers.replaceAll((id, pending) -> {
-            boolean taken = pending.involves(offer.targetId())
-                    || (offer.isExchange() && pending.involves(offer.offeredId()));
-            if (pending.status() == OfferStatus.PENDING && taken) {
-                return pending.withStatus(OfferStatus.ITEM_UNAVAILABLE);
-            }
-            return pending;
-        });
-        return accepted;
+        return offers.decide(student, offerId, accept);
     }
 
-    private Listing availableListing(int id) {
+    void completeListings(int targetId, Integer offeredId) {
+        Listing target = availableListing(targetId);
+        if (offeredId == null) {
+            listings.put(targetId, target.complete(Listing.Status.SOLD));
+            return;
+        }
+
+        Listing offered = availableListing(offeredId);
+        Listing completedTarget = target.complete(Listing.Status.EXCHANGED);
+        Listing completedOffered = offered.complete(Listing.Status.EXCHANGED);
+        listings.put(targetId, completedTarget);
+        listings.put(offeredId, completedOffered);
+    }
+
+    Listing availableListing(int id) {
         Listing listing = listing(id);
         if (!listing.isAvailable()) {
             throw new IllegalArgumentException("Listing #" + id + " is no longer available.");
@@ -199,6 +134,6 @@ public final class Marketplace {
     }
 
     List<Offer> allOffers() {
-        return List.copyOf(offers.values());
+        return offers.all();
     }
 }
