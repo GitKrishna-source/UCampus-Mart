@@ -83,29 +83,21 @@ java -cp out UCampusMart path/to/marketplace.properties
 
 ## Run with MySQL
 
-1. Start MySQL and create the database and tables from the repository root. Use a MySQL account with permission to create the schema.
+1. In MySQL Workbench, connect to your local server and run [database/schema.sql](database/schema.sql) once to create `ucampus_mart` and its tables.
+2. From the project folder, compile and start the app in PowerShell.
 
    ```powershell
-   mysql --host=127.0.0.1 --user=root --password --execute="source database/schema.sql"
-   ```
-
-2. The repository includes Connector/J 9.7.0 in `lib/` for MySQL Server 8.0. Connector/J 26.10.0 supports MySQL Server 8.4 and later. Keep one Connector/J JAR in `lib/` when switching driver versions. [Download Connector/J 9.7.0](https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/9.7.0/mysql-connector-j-9.7.0.jar) · [9.7.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-9-7-0.html) · [26.10.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-26-10-0.html)
-
-3. Set `UCAMPUS_DB_USER` and `UCAMPUS_DB_PASSWORD` for an account with `SELECT`, `INSERT`, and `UPDATE` privileges on `ucampus_mart.*`. The app defaults to `jdbc:mysql://127.0.0.1:3306/ucampus_mart`. Set `UCAMPUS_DB_URL` to use a different host, port, or database. Supply credentials through the environment and keep them out of Git.
-
-   ```powershell
-   $env:UCAMPUS_DB_USER = 'your_mysql_user'
-   $mysqlPassword = Read-Host 'MySQL password' -AsSecureString
-   $env:UCAMPUS_DB_PASSWORD = [System.Net.NetworkCredential]::new('', $mysqlPassword).Password
-   ```
-
-4. Compile with `javac -d out *.java`, then run in PowerShell.
-
-   ```powershell
+   javac -d out *.java
    java -cp "out;lib/*" UCampusMart --mysql
    ```
 
-   On Linux and macOS, use `java -cp "out:lib/*" UCampusMart --mysql`.
+3. Enter your MySQL password when prompted. Press Enter if the account has a blank password. The app connects as `root` to `jdbc:mysql://127.0.0.1:3306/ucampus_mart` by default.
+
+On Linux and macOS, use `java -cp "out:lib/*" UCampusMart --mysql`.
+
+For custom setups, set `UCAMPUS_DB_URL` or `UCAMPUS_DB_USER`. The account needs `SELECT`, `INSERT`, and `UPDATE` privileges on `ucampus_mart.*`. For scripted runs, set `UCAMPUS_DB_PASSWORD` to skip the password prompt.
+
+The repository includes Connector/J 9.7.0 in `lib/` for MySQL Server 8.0. Connector/J 26.10.0 supports MySQL Server 8.4 and later. Keep one Connector/J JAR in `lib/` when switching driver versions. [Download Connector/J 9.7.0](https://repo.maven.apache.org/maven2/com/mysql/mysql-connector-j/9.7.0/mysql-connector-j-9.7.0.jar) · [9.7.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-9-7-0.html) · [26.10.0 release notes](https://dev.mysql.com/doc/relnotes/connector-j/en/news-26-10-0.html)
 
 MySQL uses its own listings and offers tables. To open data you previously saved to a Properties file, use the file-mode command above.
 

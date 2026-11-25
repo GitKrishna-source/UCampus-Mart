@@ -8,9 +8,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 final class DBConnection extends MarketplaceStore {
     private static final String DEFAULT_URL = "jdbc:mysql://127.0.0.1:3306/ucampus_mart";
+    private static final String DEFAULT_USER = "root";
 
     private final String url;
     private final String user;
@@ -22,18 +24,21 @@ final class DBConnection extends MarketplaceStore {
         this.password = password;
     }
 
-    static DBConnection fromEnvironment() {
+    static DBConnection fromEnvironment(Supplier<String> readPassword) {
         String url = System.getenv("UCAMPUS_DB_URL");
         String user = System.getenv("UCAMPUS_DB_USER");
         String password = System.getenv("UCAMPUS_DB_PASSWORD");
-        if (user == null || user.isBlank() || password == null) {
-            throw new IllegalArgumentException("Set UCAMPUS_DB_USER and UCAMPUS_DB_PASSWORD for MySQL mode.");
-        }
         if (url == null || url.isBlank()) {
             url = DEFAULT_URL;
         }
         if (!url.startsWith("jdbc:mysql://")) {
             throw new IllegalArgumentException("UCAMPUS_DB_URL must be a jdbc:mysql:// URL.");
+        }
+        if (user == null || user.isBlank()) {
+            user = DEFAULT_USER;
+        }
+        if (password == null) {
+            password = readPassword.get();
         }
         return new DBConnection(url, user, password);
     }

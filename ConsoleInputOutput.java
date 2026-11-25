@@ -1,12 +1,30 @@
+import java.io.Console;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 final class ConsoleInputOutput {
     private final Scanner input;
+    private final Console terminal;
 
-    ConsoleInputOutput(Scanner input) {
+    ConsoleInputOutput(Scanner input, Console terminal) {
         this.input = input;
+        this.terminal = terminal;
+    }
+
+    String readMySqlPassword() {
+        String message = "MySQL password (press Enter if blank) > ";
+        if (terminal == null) {
+            System.out.print(message);
+            System.out.flush();
+            return input.nextLine();
+        }
+        char[] password = terminal.readPassword("%s", message);
+        if (password == null) {
+            throw new NoSuchElementException();
+        }
+        return new String(password);
     }
 
     String chooseStudent() {

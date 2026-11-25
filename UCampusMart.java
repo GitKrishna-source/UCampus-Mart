@@ -7,8 +7,8 @@ public final class UCampusMart {
     private final ConsoleInputOutput console;
     private final MarketplaceMenuActions actions;
 
-    private UCampusMart(MarketplaceStore store, Scanner input) {
-        console = new ConsoleInputOutput(input);
+    private UCampusMart(MarketplaceStore store, ConsoleInputOutput console) {
+        this.console = console;
         actions = new MarketplaceMenuActions(store, console);
     }
 
@@ -20,12 +20,14 @@ public final class UCampusMart {
         if (args.length == 1 && (args[0].equals("--help") || args[0].equals("-h"))) {
             System.out.println("Usage: java UCampusMart [data-file | --mysql]");
             System.out.println("The default file is .ucampus-mart/marketplace.properties in your home directory.");
-            System.out.println("For --mysql, set UCAMPUS_DB_USER and UCAMPUS_DB_PASSWORD. UCAMPUS_DB_URL is optional.");
+            System.out.println("Use --mysql for local MySQL. The default user is root and the app prompts for a password.");
             return;
         }
 
-        try (Scanner input = new Scanner(System.in)) {
-            new UCampusMart(selectStore(args), input).run();
+        var terminal = System.console();
+        try (Scanner input = terminal == null ? new Scanner(System.in) : new Scanner(terminal.reader())) {
+            ConsoleInputOutput console = new ConsoleInputOutput(input, terminal);
+            new UCampusMart(selectStore(args, console), console).run();
         } catch (IllegalArgumentException exception) {
             System.err.println(exception.getMessage());
             System.exit(2);
@@ -37,9 +39,9 @@ public final class UCampusMart {
         }
     }
 
-    private static MarketplaceStore selectStore(String[] args) throws IOException {
+    private static MarketplaceStore selectStore(String[] args, ConsoleInputOutput console) throws IOException {
         if (args.length == 1 && args[0].equals("--mysql")) {
-            MarketplaceStore database = DBConnection.fromEnvironment();
+            MarketplaceStore database = DBConnection.fromEnvironment(console::readMySqlPassword);
             database.load();
             return database;
         }
