@@ -20,7 +20,7 @@ final class MarketplaceMenuActions {
         String title = console.prompt("Item name > ");
         String category = console.prompt("Category > ");
         String condition = console.prompt("Condition > ");
-        int age = console.readPositiveInt("Age in months (12 to 24)");
+        int age = console.readPositiveInt("Age in months (" + Listing.AGE_RANGE + ")");
         Listing.Mode mode = switch (console.prompt("1. Sale  2. Exchange  3. Both > ")) {
             case "1" -> Listing.Mode.SALE;
             case "2" -> Listing.Mode.EXCHANGE;

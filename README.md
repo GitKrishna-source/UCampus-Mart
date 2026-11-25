@@ -114,7 +114,7 @@ MySQL uses its own listings and offers tables. To open data you previously saved
 
 ## Listing Rules
 
-- Items must be between 12 and 24 months old.
+- Items must be 6 to 24 months old, inclusive.
 - Sale listings must have a price greater than zero.
 - Prices support up to two decimal places.
 - Exchange-only listings cannot have a sale price.

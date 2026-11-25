@@ -12,6 +12,10 @@ public record Listing(
         BigDecimal price,
         Status status) {
 
+    private static final int MIN_AGE_MONTHS = 6;
+    private static final int MAX_AGE_MONTHS = 24;
+    static final String AGE_RANGE = MIN_AGE_MONTHS + " to " + MAX_AGE_MONTHS;
+
     public enum Mode {
         SALE, EXCHANGE, BOTH;
 
@@ -36,8 +40,8 @@ public record Listing(
         title = required(title, "Item name");
         category = required(category, "Category");
         condition = required(condition, "Condition");
-        if (ageMonths < 12 || ageMonths > 24) {
-            throw new IllegalArgumentException("Items must be 12 to 24 months old.");
+        if (ageMonths < MIN_AGE_MONTHS || ageMonths > MAX_AGE_MONTHS) {
+            throw new IllegalArgumentException("Items must be " + AGE_RANGE + " months old.");
         }
         if (mode == null || status == null) {
             throw new IllegalArgumentException("Listing mode and status are required.");

@@ -53,7 +53,7 @@ public final class UCampusMart {
 
     private void run() {
         System.out.println("UCampus Mart");
-        System.out.println("Buy, sell, and swap hostel essentials aged 12 to 24 months.");
+        System.out.println("Buy, sell, and swap hostel essentials aged " + Listing.AGE_RANGE + " months.");
         String student = console.chooseStudent();
         while (!student.isEmpty()) {
             System.out.println("\n--- Current Student: " + student + " ---");
