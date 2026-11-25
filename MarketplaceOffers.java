@@ -87,15 +87,19 @@ final class MarketplaceOffers {
 
         Marketplace.Offer accepted = offer.withStatus(Marketplace.OfferStatus.ACCEPTED);
         offers.put(offer.id(), accepted);
+        invalidatePendingOffers(offer.targetId(), offer.offeredId());
+        return accepted;
+    }
+
+    void invalidatePendingOffers(int listingId, Integer otherListingId) {
         offers.replaceAll((id, pending) -> {
-            boolean taken = pending.involves(offer.targetId())
-                    || (offer.isExchange() && pending.involves(offer.offeredId()));
-            if (pending.status() == Marketplace.OfferStatus.PENDING && taken) {
+            if (pending.status() == Marketplace.OfferStatus.PENDING
+                    && (pending.involves(listingId)
+                    || (otherListingId != null && pending.involves(otherListingId)))) {
                 return pending.withStatus(Marketplace.OfferStatus.ITEM_UNAVAILABLE);
             }
             return pending;
         });
-        return accepted;
     }
 
     List<Marketplace.Offer> all() {

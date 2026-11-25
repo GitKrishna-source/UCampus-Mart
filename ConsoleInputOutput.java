@@ -42,6 +42,7 @@ final class ConsoleInputOutput {
             case AVAILABLE -> "Available";
             case SOLD -> "Sold";
             case EXCHANGED -> "Exchanged";
+            case REMOVED -> "Removed";
         };
         System.out.printf("#%d %s | %s | %s | %d months old | %s | %s | %s%n",
                 listing.id(), listing.title(), listing.category(), listing.condition(),

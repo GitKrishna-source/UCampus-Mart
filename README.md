@@ -13,7 +13,8 @@ UCampus Mart is designed around a simple idea: useful items should find a second
 - **Purchase Requests:** One buyer can have a pending purchase request per listing.
 - **Exchange Offers:** Propose swaps using your own available items.
 - **Offer Management:** View incoming and outgoing offers, and accept or decline incoming requests.
-- **Listing Status Tracking:** Listings are marked as Available, Sold, or Exchanged.
+- **Remove Listings:** Remove your own available listings. Pending offers involving a removed item are marked Item unavailable.
+- **Listing Status Tracking:** My Listings shows items as Available, Sold, Exchanged, or Removed.
 - **Persistent Storage:** Listings and offers remain saved even after closing the application.
 
 ## Technologies Used
@@ -117,6 +118,7 @@ MySQL uses its own listings and offers tables. To open data you previously saved
 5. Switch to the listing owner's student handle.
 6. Select **Review Incoming Offers** to accept or decline requests.
 7. Check **My Listings** and **My Offers** to view updated statuses.
+8. Select **9. Remove a listing** and enter the ID of one of your available listings to take it off the marketplace.
 
 ## Listing Rules
 

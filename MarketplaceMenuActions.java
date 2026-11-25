@@ -77,6 +77,20 @@ final class MarketplaceMenuActions {
         console.showListings(store.load().listingsByOwner(student), "You have no listings yet.");
     }
 
+    void removeListing(String student) throws IOException {
+        List<Listing> available = store.load().listingsByOwner(student).stream()
+                .filter(Listing::isAvailable)
+                .toList();
+        if (available.isEmpty()) {
+            System.out.println("You have no available listings to remove.");
+            return;
+        }
+        available.forEach(console::printListing);
+        int id = console.readPositiveInt("Listing ID to remove");
+        Listing removed = store.update(marketplace -> marketplace.removeListing(student, id));
+        System.out.printf("Removed listing #%d for %s.%n", removed.id(), removed.title());
+    }
+
     void showMyOffers(String student) throws IOException {
         Marketplace marketplace = store.load();
         List<Marketplace.Offer> offers = marketplace.offersFor(student);

@@ -25,7 +25,7 @@ public record Listing(
     }
 
     public enum Status {
-        AVAILABLE, SOLD, EXCHANGED
+        AVAILABLE, SOLD, EXCHANGED, REMOVED
     }
 
     public Listing {
@@ -78,6 +78,10 @@ public record Listing(
         if (result != Status.SOLD && result != Status.EXCHANGED) {
             throw new IllegalArgumentException("Choose a completed listing status.");
         }
+        return withStatus(result);
+    }
+
+    Listing withStatus(Status result) {
         return new Listing(id, owner, title, category, condition, ageMonths, mode, price, result);
     }
 

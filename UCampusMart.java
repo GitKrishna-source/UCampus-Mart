@@ -64,6 +64,7 @@ public final class UCampusMart {
                     6. My offers
                     7. Review incoming offers
                     8. Switch student
+                    9. Remove a listing
                     0. Exit
                     """);
             try {
@@ -76,8 +77,9 @@ public final class UCampusMart {
                     case "6" -> actions.showMyOffers(student);
                     case "7" -> actions.reviewOffers(student);
                     case "8" -> student = console.chooseStudent();
+                    case "9" -> actions.removeListing(student);
                     case "0" -> student = "";
-                    default -> System.out.println("Choose a number from 0 to 8.");
+                    default -> System.out.println("Choose a number from 0 to 9.");
                 }
             } catch (IllegalArgumentException exception) {
                 System.out.println(exception.getMessage());

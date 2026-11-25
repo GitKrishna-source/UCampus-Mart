@@ -69,6 +69,18 @@ public final class Marketplace {
         return listing;
     }
 
+    public synchronized Listing removeListing(String student, int listingId) {
+        String owner = studentHandle(student);
+        Listing listing = availableListing(listingId);
+        if (!listing.owner().equals(owner)) {
+            throw new IllegalArgumentException("You can only remove your own listings.");
+        }
+        Listing removed = listing.withStatus(Listing.Status.REMOVED);
+        listings.put(listingId, removed);
+        offers.invalidatePendingOffers(listingId, null);
+        return removed;
+    }
+
     public synchronized List<Listing> searchAvailable(String query) {
         String text = query.strip().toLowerCase(Locale.ROOT);
         return listings.values().stream()
